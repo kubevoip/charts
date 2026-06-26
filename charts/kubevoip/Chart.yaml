@@ -16,14 +16,18 @@ sources:
 - https://github.com/kubevoip/kubevoip
 annotations:
   artifacthub.io/category: networking
-  artifacthub.io/operator: 'true'
+  artifacthub.io/operator: "true"
   artifacthub.io/operatorCapabilities: Basic Install
   artifacthub.io/license: MIT
-  artifacthub.io/links: "- name: website\n  url: https://kubevoip.com\n- name: documentation\n\
-    \  url: https://docs.kubevoip.com\n- name: source\n  url: https://github.com/kubevoip/kubevoip\n\
-    - name: support\n  url: https://github.com/kubevoip/kubevoip/issues\n"
-  artifacthub.io/signKey: 'fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
-
+  artifacthub.io/links: |
+    - name: website
+      url: https://kubevoip.com
+    - name: documentation
+      url: https://docs.kubevoip.com
+    - name: source
+      url: https://github.com/kubevoip/kubevoip
+    - name: support
+      url: https://github.com/kubevoip/kubevoip/issues
+  artifacthub.io/signKey: |
+    fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
     url: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc
-
-    '

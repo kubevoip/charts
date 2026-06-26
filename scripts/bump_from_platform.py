@@ -15,6 +15,17 @@ ROOT = Path(__file__).resolve().parents[1]
 CHART = ROOT / "charts" / "kubevoip"
 
 
+class LiteralString(str):
+    pass
+
+
+def literal_string_representer(dumper: yaml.Dumper, data: LiteralString) -> yaml.ScalarNode:
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+
+
+yaml.SafeDumper.add_representer(LiteralString, literal_string_representer)
+
+
 def version_from_ref(ref: str) -> str:
     match = re.fullmatch(r"v(?P<version>\d+\.\d+\.\d+)", ref)
     if not match:
@@ -23,7 +34,18 @@ def version_from_ref(ref: str) -> str:
 
 
 def write_yaml(path: Path, data: object) -> None:
+    data = preserve_multiline_strings(data)
     path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+
+def preserve_multiline_strings(data: object) -> object:
+    if isinstance(data, dict):
+        return {key: preserve_multiline_strings(value) for key, value in data.items()}
+    if isinstance(data, list):
+        return [preserve_multiline_strings(value) for value in data]
+    if isinstance(data, str) and "\n" in data:
+        return LiteralString(data)
+    return data
 
 
 def main() -> None:
