@@ -17,6 +17,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 CHART = ROOT / "charts" / "kubevoip"
+REPOSITORY_METADATA = ROOT / "artifacthub-repo.yml"
 
 
 def sha256(path: Path) -> str:
@@ -77,6 +78,7 @@ def main() -> None:
     dist.mkdir(parents=True, exist_ok=True)
     packages.mkdir(parents=True, exist_ok=True)
     (site / "CNAME").write_text("charts.kubevoip.com\n", encoding="utf-8")
+    metadata_changed = sync_repository_metadata(site)
 
     run("helm", "package", str(CHART), "--destination", str(dist))
 
@@ -87,16 +89,41 @@ def main() -> None:
         existing_digest = sha256(hosted_package)
         new_digest = sha256(new_package)
         if existing_digest == new_digest:
+            if metadata_changed:
+                print(f"kubevoip {version} already published; repository metadata changed")
+                return
             print(f"kubevoip {version} already published with matching digest; no-op")
             return
         if extracted_contents_match(hosted_package, new_package):
+            if metadata_changed:
+                print(f"kubevoip {version} already published; repository metadata changed")
+                return
             print(f"kubevoip {version} already published with matching content; no-op")
+            return
+        if metadata_changed:
+            print(
+                f"kubevoip {version} already published with different content; "
+                "publishing repository metadata only"
+            )
             return
         raise SystemExit("version already published with different content")
 
     shutil.copyfile(new_package, hosted_package)
     run("helm", "repo", "index", str(packages), "--url", args.url)
     shutil.move(str(packages / "index.yaml"), site / "index.yaml")
+
+
+def sync_repository_metadata(site: Path) -> bool:
+    destination = site / "artifacthub-repo.yml"
+    if not REPOSITORY_METADATA.exists():
+        if destination.exists():
+            destination.unlink()
+            return True
+        return False
+
+    changed = not destination.exists() or not filecmp.cmp(REPOSITORY_METADATA, destination, shallow=False)
+    shutil.copyfile(REPOSITORY_METADATA, destination)
+    return changed
 
 
 if __name__ == "__main__":

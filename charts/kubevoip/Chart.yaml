@@ -14,3 +14,17 @@ keywords:
 - operator
 sources:
 - https://github.com/kubevoip/kubevoip
+annotations:
+  artifacthub.io/category: networking
+  artifacthub.io/operator: "true"
+  artifacthub.io/operatorCapabilities: Basic Install
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: website
+      url: https://kubevoip.com
+    - name: documentation
+      url: https://docs.kubevoip.com
+    - name: source
+      url: https://github.com/kubevoip/kubevoip
+    - name: support
+      url: https://github.com/kubevoip/kubevoip/issues
