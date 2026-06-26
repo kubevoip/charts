@@ -1,0 +1,50 @@
+name: Bump Chart From Platform
+on:
+  workflow_dispatch:
+    inputs:
+      platform_ref:
+        description: Exact platform ref to copy from, such as v0.6.6.
+        required: true
+  repository_dispatch:
+    types: [platform-release]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: kubevoip/kubevoip
+          path: _platform
+          ref: ${{ github.event.client_payload.ref || github.event.inputs.platform_ref }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - name: Bump chart metadata and CRDs
+        env:
+          PLATFORM_REF: ${{ github.event.client_payload.ref || github.event.inputs.platform_ref }}
+        run: python scripts/bump_from_platform.py --platform-ref "${PLATFORM_REF}"
+      - name: Verify CRDs match platform tag exactly
+        run: diff -u _platform/config/crd/platform-crds.yaml charts/kubevoip/crds/platform-crds.yaml
+      - run: python scripts/check_chart.py
+      - uses: azure/setup-helm@v5
+      - run: helm lint charts/kubevoip
+      - run: helm template kubevoip charts/kubevoip --namespace telephony >/dev/null
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chart/bump-${{ github.event.client_payload.ref || github.event.inputs.platform_ref }}
+          delete-branch: true
+          title: Bump chart to ${{ github.event.client_payload.ref || github.event.inputs.platform_ref }}
+          commit-message: Bump chart to ${{ github.event.client_payload.ref || github.event.inputs.platform_ref }}
+          body: |
+            Bumps the Helm chart to match platform `${{ github.event.client_payload.ref || github.event.inputs.platform_ref }}`.
+
+            This PR copies CRDs from the exact platform ref and verifies them with:
+
+            ```bash
+            diff -u _platform/config/crd/platform-crds.yaml charts/kubevoip/crds/platform-crds.yaml
+            ```

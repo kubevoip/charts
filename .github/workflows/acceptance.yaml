@@ -1,0 +1,44 @@
+name: Chart Repository Acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Chart version to verify, such as 0.6.6.
+        required: true
+      platform_ref:
+        description: Exact platform ref to compare CRDs against, such as v0.6.6.
+        required: true
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: kubevoip/kubevoip
+          path: _platform
+          ref: ${{ github.event.inputs.platform_ref }}
+      - uses: azure/setup-helm@v5
+      - name: Verify CRDs match exact platform ref
+        run: diff -u _platform/config/crd/platform-crds.yaml charts/kubevoip/crds/platform-crds.yaml
+      - name: Verify classic Helm from clean cache
+        run: |
+          export HELM_REPOSITORY_CACHE="$(mktemp -d)"
+          export HELM_REPOSITORY_CONFIG="$(mktemp)"
+          helm repo add kubevoip https://charts.kubevoip.com
+          helm repo update
+          helm search repo kubevoip/kubevoip --versions
+          helm template kubevoip kubevoip/kubevoip \
+            --version "${{ github.event.inputs.version }}" \
+            --namespace telephony >/tmp/classic.yaml
+      - name: Verify OCI install path
+        run: |
+          helm template kubevoip oci://ghcr.io/kubevoip/charts/kubevoip \
+            --version "${{ github.event.inputs.version }}" \
+            --namespace telephony >/tmp/oci.yaml
+      - name: Verify chart installs matching operator image
+        run: |
+          grep -q "ghcr.io/kubevoip/kubevoip:${{ github.event.inputs.platform_ref }}" /tmp/classic.yaml
+          grep -q "ghcr.io/kubevoip/kubevoip:${{ github.event.inputs.platform_ref }}" /tmp/oci.yaml

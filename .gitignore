@@ -1,0 +1,6 @@
+*.tgz
+__pycache__/
+dist/
+site/
+_platform/
+tmp/

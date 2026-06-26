@@ -1,0 +1,90 @@
+name: Publish Chart
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  push:
+    tags: ["chart-v*.*.*"]
+permissions:
+  contents: write
+  packages: write
+concurrency:
+  group: chart-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/chart-v') ||
+      (github.event_name == 'pull_request' &&
+        github.event.pull_request.merged == true &&
+        startsWith(github.event.pull_request.head.ref, 'chart/bump-v'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && 'main' || github.ref }}
+      - uses: azure/setup-helm@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - name: Validate chart
+        run: |
+          python scripts/check_chart.py
+          helm lint charts/kubevoip
+          helm template kubevoip charts/kubevoip --namespace telephony >/dev/null
+      - name: Verify chart tag matches metadata
+        if: startsWith(github.ref, 'refs/tags/chart-v')
+        run: |
+          version="$(python - <<'PY'
+          import yaml
+          print(yaml.safe_load(open("charts/kubevoip/Chart.yaml"))["version"])
+          PY
+          )"
+          test "${GITHUB_REF_NAME}" = "chart-v${version}"
+      - name: Prepare gh-pages worktree
+        run: |
+          if git ls-remote --exit-code origin refs/heads/gh-pages >/dev/null 2>&1; then
+            git fetch origin gh-pages
+            git worktree add site gh-pages
+          else
+            mkdir site
+            git -C site init -b gh-pages
+            git -C site config user.name "github-actions[bot]"
+            git -C site config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git -C site remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Prepare chart repository update
+        id: prepare
+        run: |
+          set +e
+          output="$(python scripts/publish_chart.py --site-dir site --dist-dir dist 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if printf '%s\n' "$output" | grep -q 'already published with matching digest; no-op'; then
+            echo "publish_pages=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish_pages=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit "$status"
+      - name: Commit and push gh-pages
+        if: steps.prepare.outputs.publish_pages == 'true'
+        run: |
+          git -C site config user.name "github-actions[bot]"
+          git -C site config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C site add CNAME index.yaml packages
+          git -C site commit -m "Publish kubevoip chart ${GITHUB_SHA}"
+          git -C site push origin HEAD:gh-pages
+      - name: Publish OCI chart
+        if: steps.prepare.outputs.publish_pages == 'true'
+        run: |
+          echo "${GITHUB_TOKEN}" | helm registry login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+          helm push dist/kubevoip-*.tgz oci://ghcr.io/kubevoip/charts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
