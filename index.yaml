@@ -1,11 +1,28 @@
 apiVersion: v1
 entries:
   kubevoip:
-  - apiVersion: v2
-    appVersion: 0.6.7
-    created: '2026-06-26T06:30:54.674934565Z'
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/license: MIT
+      artifacthub.io/links: |
+        - name: website
+          url: https://kubevoip.com
+        - name: documentation
+          url: https://docs.kubevoip.com
+        - name: source
+          url: https://github.com/kubevoip/kubevoip
+        - name: support
+          url: https://github.com/kubevoip/kubevoip/issues
+      artifacthub.io/operator: "true"
+      artifacthub.io/operatorCapabilities: Basic Install
+      artifacthub.io/signKey: |
+        fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
+        url: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc
+    apiVersion: v2
+    appVersion: 0.6.8
+    created: "2026-06-26T08:06:39.12678912Z"
     description: A Kubernetes operator for scalable SIP platforms.
-    digest: 5eeebd93bf4a55d792931dcaf4defae6cd945cf0fd58b5805783680796a40fef
+    digest: 615652b9f97e5f65db354c911de9881f44e9e69147778116fea8c4c1bab741e1
     home: https://kubevoip.com
     icon: https://raw.githubusercontent.com/kubevoip/kubevoip/main/assets/logo.png
     keywords:
@@ -19,19 +36,26 @@ entries:
     - https://github.com/kubevoip/kubevoip
     type: application
     urls:
+    - https://charts.kubevoip.com/packages/kubevoip-0.6.8.tgz
+    version: 0.6.8
+  - apiVersion: v2
+    appVersion: 0.6.7
+    created: "2026-06-26T08:06:39.126301739Z"
+    description: A Kubernetes operator for scalable SIP platforms.
+    digest: 5eeebd93bf4a55d792931dcaf4defae6cd945cf0fd58b5805783680796a40fef
+    home: https://kubevoip.com
+    icon: https://raw.githubusercontent.com/kubevoip/kubevoip/main/assets/logo.svg
+    keywords:
+    - voip
+    - asterisk
+    - sip
+    - kubernetes
+    - operator
+    name: kubevoip
+    sources:
+    - https://github.com/kubevoip/kubevoip
+    type: application
+    urls:
     - https://charts.kubevoip.com/packages/kubevoip-0.6.7.tgz
     version: 0.6.7
-    annotations:
-      artifacthub.io/category: networking
-      artifacthub.io/operator: 'true'
-      artifacthub.io/operatorCapabilities: Basic Install
-      artifacthub.io/license: MIT
-      artifacthub.io/links: "- name: website\n  url: https://kubevoip.com\n- name:\
-        \ documentation\n  url: https://docs.kubevoip.com\n- name: source\n  url:\
-        \ https://github.com/kubevoip/kubevoip\n- name: support\n  url: https://github.com/kubevoip/kubevoip/issues\n"
-      artifacthub.io/signKey: 'fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
-
-        url: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc
-
-        '
-generated: '2026-06-26T06:30:54.674426267Z'
+generated: "2026-06-26T08:06:39.12581577Z"

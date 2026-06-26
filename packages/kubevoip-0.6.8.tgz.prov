@@ -1,0 +1,58 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+annotations:
+  artifacthub.io/category: networking
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: website
+      url: https://kubevoip.com
+    - name: documentation
+      url: https://docs.kubevoip.com
+    - name: source
+      url: https://github.com/kubevoip/kubevoip
+    - name: support
+      url: https://github.com/kubevoip/kubevoip/issues
+  artifacthub.io/operator: "true"
+  artifacthub.io/operatorCapabilities: Basic Install
+  artifacthub.io/signKey: |
+    fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
+    url: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc
+apiVersion: v2
+appVersion: 0.6.8
+description: A Kubernetes operator for scalable SIP platforms.
+home: https://kubevoip.com
+icon: https://raw.githubusercontent.com/kubevoip/kubevoip/main/assets/logo.png
+keywords:
+- - voip
+- - asterisk
+- - sip
+- - kubernetes
+- - operator
+name: kubevoip
+sources:
+- - https://github.com/kubevoip/kubevoip
+type: application
+version: 0.6.8
+
+...
+files:
+  kubevoip-0.6.8.tgz: sha256:615652b9f97e5f65db354c911de9881f44e9e69147778116fea8c4c1bab741e1
+
+-----BEGIN PGP SIGNATURE-----
+
+wsG5BAEBCgBtBYJqPjMPCRCtObMXYJ3CzkUUAAAAAAAcACBzYWx0QG5vdGF0aW9u
+cy5vcGVucGdwanMub3JnYlv/VUNz8G8usDRdIC6fahRWhCVSgA8odZv3l3IBoKwW
+IQSccOqDt2LCyXKSIH2tObMXYJ3CzgAAed8QAJ1KHPBkluwATK1EtsJ3KszKGxE0
+SxYiYtD5VArsuTCk3x9n4XzgSIGYNPcz44PJNcnHPu3N4nAK8OK9qcphsi0JQgre
+/fsx94plwFNWjxoq1DM15+AfL2b2am856I9MAsgZuttAIX4/OcCsFug7zhe+Hlox
+Enow6+0+lJe9lg7WE13pqA1SyDlfXID2cvqHqIyPOH1YK63VlStZzdMmeUTW0rdw
+vSGTsUfx2kILEEsQRTSkpUb/gVzRT77UKw9vDIaIdZ9NdGC4HrIPmvZUdUEwIJuL
+HXOuRyCi6VzAnIFLd+e/QcEMAn4jqWMYV1mXQMF0zuGLqs2L25Zh+iKp98dLceAa
+ysBaJCn5k6om9qsvPP0TxewZlEZxJ2Tdo1a7taKjJlUcFqI0woA51GcB+s/I8xUW
+/o1gyqoF17izUVocgIFbhucxv2d3eCt6PuudmYMHYdTmjqTFSDZ0tzBxqg0mezKG
+nvThjTeV3dVmHDZgW2bSDybCz5MwIcnKZEa+vswqzWzIVDaXCPte5/xBdFLlPP9o
+uEwS8pZBm7pO4qJfcqS0m8wiEHchOcEZaqI9STwED583xKPgOS/Dq40IIVmCe7XW
+s7Rgdzrmrk6OOPsV60bUtdjjDBzYbmLINrvS1pnk4oGl+6m+MauPx3M1Kx9IanmJ
+mqYhVDe7DmegabG7
+-----END PGP SIGNATURE-----
