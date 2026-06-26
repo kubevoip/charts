@@ -1,0 +1,24 @@
+apiVersion: v1
+entries:
+  kubevoip:
+  - apiVersion: v2
+    appVersion: 0.6.7
+    created: "2026-06-26T06:30:54.674934565Z"
+    description: A Kubernetes operator for scalable SIP platforms.
+    digest: 5eeebd93bf4a55d792931dcaf4defae6cd945cf0fd58b5805783680796a40fef
+    home: https://kubevoip.com
+    icon: https://raw.githubusercontent.com/kubevoip/kubevoip/main/assets/logo.svg
+    keywords:
+    - voip
+    - asterisk
+    - sip
+    - kubernetes
+    - operator
+    name: kubevoip
+    sources:
+    - https://github.com/kubevoip/kubevoip
+    type: application
+    urls:
+    - https://charts.kubevoip.com/packages/kubevoip-0.6.7.tgz
+    version: 0.6.7
+generated: "2026-06-26T06:30:54.674426267Z"
