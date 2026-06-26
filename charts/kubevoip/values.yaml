@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/kubevoip/kubevoip
-  tag: v0.6.7
+  tag: v0.6.8
   pullPolicy: IfNotPresent
 operator:
   replicas: 1
