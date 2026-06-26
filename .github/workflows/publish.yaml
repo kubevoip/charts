@@ -84,10 +84,13 @@ jobs:
           printf '%s\n' "$output"
           if printf '%s\n' "$output" | grep -Eq 'already published with matching (digest|content); no-op'; then
             echo "publish_pages=false" >> "$GITHUB_OUTPUT"
+            echo "publish_oci=true" >> "$GITHUB_OUTPUT"
+          elif printf '%s\n' "$output" | grep -Eq 'publishing repository metadata only'; then
+            echo "publish_pages=true" >> "$GITHUB_OUTPUT"
             echo "publish_oci=false" >> "$GITHUB_OUTPUT"
           elif printf '%s\n' "$output" | grep -Eq 'repository metadata changed|publishing repository metadata only'; then
             echo "publish_pages=true" >> "$GITHUB_OUTPUT"
-            echo "publish_oci=false" >> "$GITHUB_OUTPUT"
+            echo "publish_oci=true" >> "$GITHUB_OUTPUT"
           else
             echo "publish_pages=true" >> "$GITHUB_OUTPUT"
             echo "publish_oci=true" >> "$GITHUB_OUTPUT"
@@ -104,7 +107,16 @@ jobs:
       - name: Publish OCI chart
         if: steps.prepare.outputs.publish_oci == 'true'
         run: |
+          version="$(python - <<'PY'
+          import yaml
+          print(yaml.safe_load(open("charts/kubevoip/Chart.yaml"))["version"])
+          PY
+          )"
+          if helm show chart "oci://ghcr.io/kubevoip/charts/kubevoip" --version "${version}" >/dev/null 2>&1; then
+            echo "OCI chart ${version} already exists; skipping"
+            exit 0
+          fi
           echo "${GITHUB_TOKEN}" | helm registry login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
-          helm push dist/kubevoip-*.tgz oci://ghcr.io/kubevoip/charts
+          helm push "site/packages/kubevoip-${version}.tgz" oci://ghcr.io/kubevoip/charts
         env:
           GITHUB_TOKEN: ${{ github.token }}
