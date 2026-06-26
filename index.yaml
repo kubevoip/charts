@@ -29,4 +29,9 @@ entries:
       artifacthub.io/links: "- name: website\n  url: https://kubevoip.com\n- name:\
         \ documentation\n  url: https://docs.kubevoip.com\n- name: source\n  url:\
         \ https://github.com/kubevoip/kubevoip\n- name: support\n  url: https://github.com/kubevoip/kubevoip/issues\n"
+      artifacthub.io/signKey: 'fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
+
+        url: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc
+
+        '
 generated: '2026-06-26T06:30:54.674426267Z'
