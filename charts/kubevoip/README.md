@@ -1,5 +1,9 @@
 # KubeVoIP
 
+The canonical KubeVoIP README lives in the main platform repository:
+
+https://github.com/kubevoip/kubevoip#readme
+
 KubeVoIP is a Kubernetes operator for SIP platforms. It runs Kamailio gateways,
 RTPengine media relays, SIP users, dial policies, provider-neutral trunks, and
 Asterisk application pods, with runtime data stored in PostgreSQL.
@@ -42,7 +46,8 @@ helm upgrade --install kubevoip oci://ghcr.io/kubevoip/charts/kubevoip \
 ## Configuration
 
 The chart deploys the KubeVoIP operator and lets the operator reconcile SIP
-platform resources in the release namespace. Common values include:
+platform resources in the release namespace. Artifact Hub renders the full
+values reference from the chart's `values.schema.json`. Common values include:
 
 | Value | Description |
 | --- | --- |
@@ -78,11 +83,12 @@ uvx kubevoip -n telephony init
 ```
 
 For the full walkthrough, API reference, networking guidance, and production
-database notes, see the KubeVoIP documentation.
+database notes, see the KubeVoIP README and documentation.
 
 ## Links
 
 - Website: https://kubevoip.com
+- Main README: https://github.com/kubevoip/kubevoip#readme
 - Documentation: https://docs.kubevoip.com
 - Source: https://github.com/kubevoip/kubevoip
 - Chart source: https://github.com/kubevoip/charts
