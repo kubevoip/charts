@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import filecmp
 import hashlib
 import shutil
 import subprocess
+import tarfile
+import tempfile
 from pathlib import Path
 
 import yaml
@@ -31,6 +34,29 @@ def run(*args: str, cwd: Path = ROOT) -> None:
 def chart_version() -> str:
     chart = yaml.safe_load((CHART / "Chart.yaml").read_text(encoding="utf-8"))
     return str(chart["version"])
+
+
+def extracted_contents_match(left: Path, right: Path) -> bool:
+    with tempfile.TemporaryDirectory() as temp:
+        root = Path(temp)
+        left_dir = root / "left"
+        right_dir = root / "right"
+        left_dir.mkdir()
+        right_dir.mkdir()
+
+        with tarfile.open(left, "r:gz") as archive:
+            archive.extractall(left_dir, filter="data")
+        with tarfile.open(right, "r:gz") as archive:
+            archive.extractall(right_dir, filter="data")
+
+        comparison = filecmp.dircmp(left_dir, right_dir)
+        return dirs_match(comparison)
+
+
+def dirs_match(comparison: filecmp.dircmp[str]) -> bool:
+    if comparison.left_only or comparison.right_only or comparison.diff_files or comparison.funny_files:
+        return False
+    return all(dirs_match(child) for child in comparison.subdirs.values())
 
 
 def main() -> None:
@@ -62,6 +88,9 @@ def main() -> None:
         new_digest = sha256(new_package)
         if existing_digest == new_digest:
             print(f"kubevoip {version} already published with matching digest; no-op")
+            return
+        if extracted_contents_match(hosted_package, new_package):
+            print(f"kubevoip {version} already published with matching content; no-op")
             return
         raise SystemExit("version already published with different content")
 

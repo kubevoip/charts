@@ -67,7 +67,7 @@ jobs:
           status=$?
           set -e
           printf '%s\n' "$output"
-          if printf '%s\n' "$output" | grep -q 'already published with matching digest; no-op'; then
+          if printf '%s\n' "$output" | grep -Eq 'already published with matching (digest|content); no-op'; then
             echo "publish_pages=false" >> "$GITHUB_OUTPUT"
           else
             echo "publish_pages=true" >> "$GITHUB_OUTPUT"
