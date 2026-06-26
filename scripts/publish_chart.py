@@ -37,6 +37,10 @@ def chart_version() -> str:
     return str(chart["version"])
 
 
+def chart_metadata() -> dict[str, object]:
+    return yaml.safe_load((CHART / "Chart.yaml").read_text(encoding="utf-8"))
+
+
 def extracted_contents_match(left: Path, right: Path) -> bool:
     with tempfile.TemporaryDirectory() as temp:
         root = Path(temp)
@@ -86,21 +90,22 @@ def main() -> None:
         raise SystemExit(f"helm package did not create {new_package}")
 
     if hosted_package.exists():
+        index_changed = sync_index_metadata(site, chart_metadata())
         existing_digest = sha256(hosted_package)
         new_digest = sha256(new_package)
         if existing_digest == new_digest:
-            if metadata_changed:
+            if metadata_changed or index_changed:
                 print(f"kubevoip {version} already published; repository metadata changed")
                 return
             print(f"kubevoip {version} already published with matching digest; no-op")
             return
         if extracted_contents_match(hosted_package, new_package):
-            if metadata_changed:
+            if metadata_changed or index_changed:
                 print(f"kubevoip {version} already published; repository metadata changed")
                 return
             print(f"kubevoip {version} already published with matching content; no-op")
             return
-        if metadata_changed:
+        if metadata_changed or index_changed:
             print(
                 f"kubevoip {version} already published with different content; "
                 "publishing repository metadata only"
@@ -124,6 +129,51 @@ def sync_repository_metadata(site: Path) -> bool:
     changed = not destination.exists() or not filecmp.cmp(REPOSITORY_METADATA, destination, shallow=False)
     shutil.copyfile(REPOSITORY_METADATA, destination)
     return changed
+
+
+def sync_index_metadata(site: Path, chart: dict[str, object]) -> bool:
+    index_path = site / "index.yaml"
+    if not index_path.exists():
+        return False
+
+    index = yaml.safe_load(index_path.read_text(encoding="utf-8"))
+    if not isinstance(index, dict):
+        return False
+
+    entries = index.get("entries")
+    if not isinstance(entries, dict):
+        return False
+
+    chart_name = str(chart["name"])
+    versions = entries.get(chart_name)
+    if not isinstance(versions, list):
+        return False
+
+    for entry in versions:
+        if not isinstance(entry, dict) or str(entry.get("version")) != str(chart["version"]):
+            continue
+
+        changed = False
+        for key in (
+            "annotations",
+            "apiVersion",
+            "appVersion",
+            "description",
+            "home",
+            "icon",
+            "keywords",
+            "sources",
+            "type",
+        ):
+            if chart.get(key) is not None and entry.get(key) != chart[key]:
+                entry[key] = chart[key]
+                changed = True
+
+        if changed:
+            index_path.write_text(yaml.safe_dump(index, sort_keys=False), encoding="utf-8")
+        return changed
+
+    return False
 
 
 if __name__ == "__main__":

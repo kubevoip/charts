@@ -25,6 +25,8 @@ def main() -> None:
     actual_tag = values["image"]["tag"]
     if actual_tag != expected_tag:
         raise SystemExit(f"operator image tag {actual_tag} does not match {expected_tag}")
+    if chart.get("icon") != "https://raw.githubusercontent.com/kubevoip/kubevoip/main/assets/logo.png":
+        raise SystemExit("Chart.yaml icon must point to the PNG logo for Artifact Hub")
 
     require_artifacthub_metadata(chart)
 
