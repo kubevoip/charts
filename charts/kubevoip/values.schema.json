@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "KubeVoIP Helm chart values",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the chart name used in generated Kubernetes resource names."
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "KubeVoIP operator image settings.",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Container image repository for the KubeVoIP operator."
+        },
+        "tag": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Container image tag for the KubeVoIP operator."
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "description": "Image pull policy for the KubeVoIP operator container."
+        }
+      },
+      "required": ["repository", "tag", "pullPolicy"]
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "KubeVoIP operator deployment settings.",
+      "properties": {
+        "replicas": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of operator pods. Values greater than 1 require high availability peering."
+        },
+        "highAvailability": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Active/passive Kopf peering settings for operator failover.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable operator active/passive failover with a namespace-scoped KopfPeering."
+            },
+            "peeringName": {
+              "type": "string",
+              "description": "Override the KopfPeering resource name. Empty string uses the release fullname."
+            }
+          },
+          "required": ["enabled", "peeringName"]
+        }
+      },
+      "required": ["replicas", "highAvailability"]
+    },
+    "asteriskImage": {
+      "$ref": "#/definitions/runtimeImage",
+      "description": "Asterisk worker runtime image settings."
+    },
+    "kamailioImage": {
+      "$ref": "#/definitions/runtimeImage",
+      "description": "Kamailio gateway runtime image settings."
+    },
+    "rtpengineImage": {
+      "$ref": "#/definitions/runtimeImage",
+      "description": "RTPengine media relay runtime image settings."
+    },
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "ServiceAccount settings for the KubeVoIP operator.",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create a ServiceAccount for the operator."
+        },
+        "name": {
+          "type": "string",
+          "description": "Use an existing ServiceAccount name when create is false. Empty string uses the release fullname."
+        }
+      },
+      "required": ["create", "name"]
+    },
+    "rbac": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "RBAC settings for the KubeVoIP operator.",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create Kubernetes RBAC resources for the operator."
+        }
+      },
+      "required": ["create"]
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Resource requests and limits for the operator container.",
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/resourceList"
+        },
+        "requests": {
+          "$ref": "#/definitions/resourceList"
+        }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Node selector labels for scheduling the operator pod.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Kubernetes tolerations for scheduling the operator pod.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "affinity": {
+      "type": "object",
+      "description": "Kubernetes affinity rules for scheduling the operator pod.",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "image",
+    "operator",
+    "asteriskImage",
+    "kamailioImage",
+    "rtpengineImage",
+    "serviceAccount",
+    "rbac",
+    "resources",
+    "nodeSelector",
+    "tolerations",
+    "affinity"
+  ],
+  "definitions": {
+    "runtimeImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Container image repository."
+        },
+        "tag": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Container image tag."
+        }
+      },
+      "required": ["repository", "tag"]
+    },
+    "resourceList": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ]
+      }
+    }
+  }
+}

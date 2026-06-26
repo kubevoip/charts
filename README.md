@@ -42,6 +42,9 @@ The `gh-pages` branch is authoritative for hosted Helm repository artifacts:
 Historical packages and index entries are retained indefinitely unless a version
 is intentionally deprecated.
 
+Artifact Hub repository metadata, official status, signing, and values schema
+notes live in [docs/artifact-hub.md](docs/artifact-hub.md).
+
 ## OCI compatibility
 
 The intended OCI install URL remains:

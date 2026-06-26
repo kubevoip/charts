@@ -29,6 +29,8 @@ def main() -> None:
         raise SystemExit("Chart.yaml icon must point to the PNG logo for Artifact Hub")
 
     require_artifacthub_metadata(chart)
+    if not (CHART / "values.schema.json").is_file():
+        raise SystemExit("chart package is missing values.schema.json")
 
     for path in sorted((CHART / "crds").glob("*.yaml")):
         docs = list(yaml.safe_load_all(path.read_text(encoding="utf-8")))

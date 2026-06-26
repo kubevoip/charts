@@ -69,6 +69,10 @@ def main() -> None:
     parser.add_argument("--site-dir", default="site")
     parser.add_argument("--dist-dir", default="dist")
     parser.add_argument("--url", default="https://charts.kubevoip.com/packages")
+    parser.add_argument("--sign", action="store_true")
+    parser.add_argument("--sign-key")
+    parser.add_argument("--sign-keyring")
+    parser.add_argument("--sign-passphrase-file")
     args = parser.parse_args()
 
     version = chart_version()
@@ -77,6 +81,7 @@ def main() -> None:
     packages = site / "packages"
     package_name = f"kubevoip-{version}.tgz"
     new_package = dist / package_name
+    new_provenance = dist / f"{package_name}.prov"
     hosted_package = packages / package_name
 
     dist.mkdir(parents=True, exist_ok=True)
@@ -84,28 +89,46 @@ def main() -> None:
     (site / "CNAME").write_text("charts.kubevoip.com\n", encoding="utf-8")
     metadata_changed = sync_repository_metadata(site)
 
-    run("helm", "package", str(CHART), "--destination", str(dist))
+    package_args = ["helm", "package", str(CHART), "--destination", str(dist)]
+    if args.sign:
+        if not args.sign_key or not args.sign_keyring or not args.sign_passphrase_file:
+            raise SystemExit("--sign requires --sign-key, --sign-keyring, and --sign-passphrase-file")
+        package_args.extend(
+            [
+                "--sign",
+                "--key",
+                args.sign_key,
+                "--keyring",
+                args.sign_keyring,
+                "--passphrase-file",
+                args.sign_passphrase_file,
+            ]
+        )
+    run(*package_args)
 
     if not new_package.exists():
         raise SystemExit(f"helm package did not create {new_package}")
+    if args.sign and not new_provenance.exists():
+        raise SystemExit(f"helm package did not create {new_provenance}")
 
     if hosted_package.exists():
         index_changed = sync_index_metadata(site, chart_metadata())
+        provenance_changed = sync_provenance(new_provenance, packages / new_provenance.name)
         existing_digest = sha256(hosted_package)
         new_digest = sha256(new_package)
         if existing_digest == new_digest:
-            if metadata_changed or index_changed:
+            if metadata_changed or index_changed or provenance_changed:
                 print(f"kubevoip {version} already published; repository metadata changed")
                 return
             print(f"kubevoip {version} already published with matching digest; no-op")
             return
         if extracted_contents_match(hosted_package, new_package):
-            if metadata_changed or index_changed:
+            if metadata_changed or index_changed or provenance_changed:
                 print(f"kubevoip {version} already published; repository metadata changed")
                 return
             print(f"kubevoip {version} already published with matching content; no-op")
             return
-        if metadata_changed or index_changed:
+        if metadata_changed or index_changed or provenance_changed:
             print(
                 f"kubevoip {version} already published with different content; "
                 "publishing repository metadata only"
@@ -114,6 +137,7 @@ def main() -> None:
         raise SystemExit("version already published with different content")
 
     shutil.copyfile(new_package, hosted_package)
+    sync_provenance(new_provenance, packages / new_provenance.name)
     run("helm", "repo", "index", str(packages), "--url", args.url)
     shutil.move(str(packages / "index.yaml"), site / "index.yaml")
 
@@ -174,6 +198,14 @@ def sync_index_metadata(site: Path, chart: dict[str, object]) -> bool:
         return changed
 
     return False
+
+
+def sync_provenance(source: Path, destination: Path) -> bool:
+    if not source.exists():
+        return False
+    changed = not destination.exists() or not filecmp.cmp(source, destination, shallow=False)
+    shutil.copyfile(source, destination)
+    return changed
 
 
 if __name__ == "__main__":

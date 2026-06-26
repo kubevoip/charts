@@ -61,9 +61,24 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Prepare chart repository update
         id: prepare
+        env:
+          CHART_SIGNING_KEY: ${{ vars.CHART_SIGNING_KEY }}
+          CHART_SIGNING_KEYRING_BASE64: ${{ secrets.CHART_SIGNING_KEYRING_BASE64 }}
+          CHART_SIGNING_PASSPHRASE: ${{ secrets.CHART_SIGNING_PASSPHRASE }}
         run: |
+          signing_args=()
+          if [ -n "${CHART_SIGNING_KEY}" ] && [ -n "${CHART_SIGNING_KEYRING_BASE64}" ] && [ -n "${CHART_SIGNING_PASSPHRASE}" ]; then
+            printf '%s' "${CHART_SIGNING_KEYRING_BASE64}" | base64 -d > chart-signing.gpg
+            printf '%s' "${CHART_SIGNING_PASSPHRASE}" > chart-signing-passphrase.txt
+            signing_args=(
+              --sign
+              --sign-key "${CHART_SIGNING_KEY}"
+              --sign-keyring chart-signing.gpg
+              --sign-passphrase-file chart-signing-passphrase.txt
+            )
+          fi
           set +e
-          output="$(python scripts/publish_chart.py --site-dir site --dist-dir dist 2>&1)"
+          output="$(python scripts/publish_chart.py --site-dir site --dist-dir dist "${signing_args[@]}" 2>&1)"
           status=$?
           set -e
           printf '%s\n' "$output"
