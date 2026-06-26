@@ -7,7 +7,9 @@ on:
   push:
     tags: ["chart-v*.*.*"]
 permissions:
+  attestations: write
   contents: write
+  id-token: write
   packages: write
 concurrency:
   group: chart-publish
@@ -96,6 +98,11 @@ jobs:
             echo "publish_oci=true" >> "$GITHUB_OUTPUT"
           fi
           exit "$status"
+      - name: Attest chart package
+        if: steps.prepare.outputs.publish_pages == 'true' || steps.prepare.outputs.publish_oci == 'true'
+        uses: actions/attest-build-provenance@v4.1.0
+        with:
+          subject-path: site/packages/kubevoip-*.tgz
       - name: Commit and push gh-pages
         if: steps.prepare.outputs.publish_pages == 'true'
         run: |
