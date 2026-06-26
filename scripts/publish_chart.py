@@ -113,22 +113,22 @@ def main() -> None:
 
     if hosted_package.exists():
         index_changed = sync_index_metadata(site, chart_metadata())
-        provenance_changed = sync_provenance(new_provenance, packages / new_provenance.name)
         existing_digest = sha256(hosted_package)
         new_digest = sha256(new_package)
         if existing_digest == new_digest:
+            provenance_changed = sync_provenance(new_provenance, packages / new_provenance.name)
             if metadata_changed or index_changed or provenance_changed:
                 print(f"kubevoip {version} already published; repository metadata changed")
                 return
             print(f"kubevoip {version} already published with matching digest; no-op")
             return
         if extracted_contents_match(hosted_package, new_package):
-            if metadata_changed or index_changed or provenance_changed:
+            if metadata_changed or index_changed:
                 print(f"kubevoip {version} already published; repository metadata changed")
                 return
             print(f"kubevoip {version} already published with matching content; no-op")
             return
-        if metadata_changed or index_changed or provenance_changed:
+        if metadata_changed or index_changed:
             print(
                 f"kubevoip {version} already published with different content; "
                 "publishing repository metadata only"

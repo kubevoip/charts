@@ -28,3 +28,6 @@ annotations:
       url: https://github.com/kubevoip/kubevoip
     - name: support
       url: https://github.com/kubevoip/kubevoip/issues
+  artifacthub.io/signKey: |
+    fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
+    url: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc

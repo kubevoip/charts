@@ -36,8 +36,17 @@ packages.
 
 ## Signed Packages
 
-Signed status requires Helm provenance files. The publish workflow supports
-signing when all of these GitHub Actions settings exist in `kubevoip/charts`:
+Signed status requires Helm provenance files. KubeVoIP chart packages are signed
+with:
+
+```text
+KubeVoIP Chart Signing <hello@kubevoip.com>
+Fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
+Public key: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc
+```
+
+The publish workflow signs packages when all of these GitHub Actions settings
+exist in `kubevoip/charts`:
 
 - Repository variable `CHART_SIGNING_KEY`: a substring of the signing key UID,
   such as `hello@kubevoip.com`.
@@ -45,13 +54,13 @@ signing when all of these GitHub Actions settings exist in `kubevoip/charts`:
   secret keyring usable by `helm package --sign --keyring`.
 - Repository secret `CHART_SIGNING_PASSPHRASE`: passphrase for the signing key.
 
-The public key should be published at a stable HTTPS URL. After that, add this
-annotation to `charts/kubevoip/Chart.yaml`:
+The chart advertises the key to Artifact Hub with this annotation in
+`charts/kubevoip/Chart.yaml`:
 
 ```yaml
 artifacthub.io/signKey: |
-  fingerprint: <PGP key fingerprint>
-  url: <public key URL>
+  fingerprint: 9C70EA83B762C2C97292207DAD39B317609DC2CE
+  url: https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc
 ```
 
 The next chart release will publish both `packages/kubevoip-X.Y.Z.tgz` and

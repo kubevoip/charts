@@ -66,6 +66,13 @@ def require_artifacthub_metadata(chart: dict[str, object]) -> None:
         if required not in link_names:
             raise SystemExit(f"Chart.yaml artifacthub.io/links is missing {required}")
 
+    sign_key = yaml.safe_load(str(annotations.get("artifacthub.io/signKey", "")))
+    if sign_key != {
+        "fingerprint": "9C70EA83B762C2C97292207DAD39B317609DC2CE",
+        "url": "https://raw.githubusercontent.com/kubevoip/charts/main/keys/kubevoip-chart-signing.asc",
+    }:
+        raise SystemExit("Chart.yaml artifacthub.io/signKey does not match the KubeVoIP chart signing key")
+
     metadata = yaml.safe_load(REPOSITORY_METADATA.read_text(encoding="utf-8"))
     owners = metadata.get("owners") if isinstance(metadata, dict) else None
     if not isinstance(owners, list) or not owners:
