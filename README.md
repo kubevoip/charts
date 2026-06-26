@@ -1,5 +1,7 @@
 # KubeVoIP Helm Charts
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kubevoip)](https://artifacthub.io/packages/search?repo=kubevoip)
+
 This repository owns KubeVoIP Helm chart source and, after the migration cutover,
 publishes the chart to:
 
